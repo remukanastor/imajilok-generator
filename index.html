@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GENERATOR GAMBAR PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #face-upload-input { display: none; }
+        .drag-over { border-color: #6366f1 !important; background-color: #4b5563 !important; }
+        .gemini-btn-spinner { animation: spin 1s linear infinite; border: 2px solid #f3f3f3; border-top: 2px solid #4f46e5; border-radius: 50%; width: 16px; height: 16px; }
+        .control-section { border: 1px solid #374151; padding: 1rem; border-radius: 0.75rem; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-2xl bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 space-y-6">
+        
+        <div class="text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
+                Generator Gambar Pro
+            </h1>
+            <p class="text-gray-400 mt-2">By. IMAJINASI LOKAL</p>
+        </div>
+
+        <!-- Unggah Wajah -->
+        <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-300">1. Unggah Referensi Wajah (Wajib)</label>
+            <input type="file" id="face-upload-input" accept="image/png, image/jpeg">
+            <label id="face-upload-label" for="face-upload-input" class="w-full flex items-center justify-center p-4 bg-gray-700 border-2 border-dashed border-gray-600 rounded-lg cursor-pointer hover:bg-gray-600 hover:border-indigo-500 transition">
+                <div id="upload-prompt" class="text-center text-gray-400">
+                    <svg class="mx-auto h-12 w-12" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    <span class="mt-2 block text-sm font-semibold">Klik atau seret gambar</span>
+                </div>
+                <div id="upload-preview-container" class="hidden w-24 h-24 rounded-full overflow-hidden ring-4 ring-indigo-500">
+                    <img id="upload-preview-image" src="" alt="Pratinjau Wajah" class="w-full h-full object-cover">
+                </div>
+            </label>
+        </div>
+
+        <!-- Kontrol Detail Gambar -->
+        <div class="space-y-4 control-section">
+            <h3 class="text-lg font-semibold text-gray-200 mb-4">2. Atur Detail Gambar</h3>
+            
+            <!-- Pakaian -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="font-medium text-white">Pertahankan Pakaian Referensi</span>
+                    <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="pakaian-toggle" class="sr-only peer" checked><div class="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div></label>
+                </div>
+                <input type="text" id="pakaian-deskripsi" class="hidden w-full p-2 bg-gray-700 border border-gray-600 rounded-lg text-sm" placeholder="Contoh: kemeja batik lengan panjang">
+            </div>
+            
+            <!-- Latar Belakang -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="font-medium text-white">Pertahankan Latar Referensi</span>
+                    <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="latar-toggle" class="sr-only peer" checked><div class="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div></label>
+                </div>
+                <input type="text" id="latar-deskripsi" class="hidden w-full p-2 bg-gray-700 border border-gray-600 rounded-lg text-sm" placeholder="Contoh: di dalam perpustakaan modern">
+            </div>
+            
+            <!-- Pose -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="font-medium text-white">Ubah Pose (Random)</span>
+                    <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="pose-toggle" class="sr-only peer" checked><div class="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div></label>
+                </div>
+                <input type="text" id="pose-deskripsi" class="hidden w-full p-2 bg-gray-700 border border-gray-600 rounded-lg text-sm" placeholder="Contoh: sedang membaca buku sambil duduk">
+            </div>
+
+            <hr class="border-gray-600">
+            
+            <!-- Angle, Perspektif, Environment -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <label for="angle-select" class="text-sm font-medium text-gray-300">Angle (Jarak Tembak)</label>
+                    <select id="angle-select" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg text-sm">
+                        <option value="random">Random</option>
+                        <option value="sangat-dekat">Sangat Dekat (Wajah)</option>
+                        <option value="dekat">Dekat (Setengah Badan)</option>
+                        <option value="jauh">Jauh (Sampai Lutut)</option>
+                        <option value="sangat-jauh">Sangat Jauh (Seluruh Badan)</option>
+                    </select>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-medium text-gray-300">Perspektif</label>
+                    <div id="perspektif-selector" class="grid grid-cols-3 gap-2">
+                        <button data-value="depan" class="perspektif-btn sub-btn-active">Depan</button>
+                        <button data-value="samping" class="perspektif-btn sub-btn-inactive">Samping</button>
+                        <button data-value="belakang" class="perspektif-btn sub-btn-inactive">Belakang</button>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-medium text-gray-300">Lokasi</label>
+                    <div id="lokasi-selector" class="grid grid-cols-2 gap-2">
+                        <button data-value="outdoor" class="lokasi-btn sub-btn-active">Outdoor</button>
+                        <button data-value="indoor" class="lokasi-btn sub-btn-inactive">Indoor</button>
+                    </div>
+                </div>
+                 <div class="space-y-2">
+                    <label class="text-sm font-medium text-gray-300">Waktu</label>
+                    <div id="waktu-selector" class="grid grid-cols-2 gap-2">
+                        <button data-value="siang" class="waktu-btn sub-btn-active">Siang</button>
+                        <button data-value="malam" class="waktu-btn sub-btn-inactive">Malam</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Deskripsi Tambahan -->
+        <div class="space-y-2">
+             <label for="prompt" class="text-sm font-medium text-gray-300">3. Deskripsi Tambahan (Opsional)</label>
+             <textarea id="prompt" rows="2" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Tambahkan detail lain di sini, misal: gaya lukisan cat air, suasana ceria..."></textarea>
+        </div>
+        
+        <!-- Aspek Rasio -->
+         <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-300">4. Aspek Rasio</label>
+            <div id="aspect-ratio-selector" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                 <button data-ratio="1:1" class="aspect-ratio-btn sub-btn-active">Persegi (1:1)</button>
+                 <button data-ratio="16:9" class="aspect-ratio-btn sub-btn-inactive">Lanskap (16:9)</button>
+                 <button data-ratio="4:3" class="aspect-ratio-btn sub-btn-inactive">Lanskap (4:3)</button>
+                 <button data-ratio="9:16" class="aspect-ratio-btn sub-btn-inactive">Potret (9:16)</button>
+                 <button data-ratio="3:4" class="aspect-ratio-btn sub-btn-inactive">Potret (3:4)</button>
+            </div>
+        </div>
+
+        <button id="generate-btn" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-lg transition transform hover:scale-105 shadow-lg">
+            Buat Gambar
+        </button>
+
+        <!-- Hasil -->
+        <div id="result-container" class="w-full bg-gray-900 rounded-lg min-h-[256px] flex items-center justify-center p-2">
+            <div id="image-container" class="hidden w-full h-full"><img id="result-image" src="" alt="Gambar Dihasilkan" class="w-full h-full object-contain"></div>
+            <div id="loader" class="hidden"><div class="loader"></div></div>
+            <div id="placeholder" class="text-center text-gray-500"><p>Gambar Anda akan muncul di sini</p></div>
+            <p id="error-message" class="hidden text-red-400 text-center p-4"></p>
+        </div>
+        
+        <div id="action-buttons" class="hidden w-full mt-4 flex flex-col sm:flex-row gap-3">
+            <a id="download-btn" href="#" download="imajinasi-lokal.png" class="flex-1 text-center bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg">Unduh</a>
+            <a href="http://lynk.id/imajinasilokal1/s/12o34vm546ld/checkout" target="_blank" class="flex-1 text-center bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 px-4 rounded-lg">Traktir Kopi</a>
+        </div>
+    </div>
+    
+    <footer class="text-center text-gray-500 text-sm mt-8 pb-4">
+        <p>Ditenagai oleh Gemini</p>
+    </footer>
+
+    <script type="module">
+        // --- CONFIG & DOM ELEMENTS ---
+        const IMAGE_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=`;
+        
+        const dom = {
+            generateBtn: document.getElementById('generate-btn'),
+            promptEl: document.getElementById('prompt'),
+            faceUploadInput: document.getElementById('face-upload-input'),
+            faceUploadLabel: document.getElementById('face-upload-label'),
+            uploadPrompt: document.getElementById('upload-prompt'),
+            uploadPreviewContainer: document.getElementById('upload-preview-container'),
+            uploadPreviewImage: document.getElementById('upload-preview-image'),
+            
+            pakaianToggle: document.getElementById('pakaian-toggle'),
+            pakaianDeskripsi: document.getElementById('pakaian-deskripsi'),
+            latarToggle: document.getElementById('latar-toggle'),
+            latarDeskripsi: document.getElementById('latar-deskripsi'),
+            poseToggle: document.getElementById('pose-toggle'),
+            poseDeskripsi: document.getElementById('pose-deskripsi'),
+            
+            angleSelect: document.getElementById('angle-select'),
+            perspektifSelector: document.getElementById('perspektif-selector'),
+            lokasiSelector: document.getElementById('lokasi-selector'),
+            waktuSelector: document.getElementById('waktu-selector'),
+            aspectRatioSelector: document.getElementById('aspect-ratio-selector'),
+            
+            resultContainer: document.getElementById('result-container'),
+            imageContainer: document.getElementById('image-container'),
+            resultImage: document.getElementById('result-image'),
+            loader: document.getElementById('loader'),
+            placeholder: document.getElementById('placeholder'),
+            errorMessage: document.getElementById('error-message'),
+            actionButtons: document.getElementById('action-buttons'),
+            downloadBtn: document.getElementById('download-btn'),
+        };
+
+        // --- STATE MANAGEMENT ---
+        const state = {
+            uploadedImage: { base64: null, mimeType: null },
+            selectedAspectRatio: '1:1',
+            selectedPerspektif: 'depan',
+            selectedLokasi: 'outdoor',
+            selectedWaktu: 'siang',
+        };
+        
+        // --- UI HELPER FUNCTIONS ---
+        const ui = {
+            showLoading: () => {
+                dom.loader.classList.remove('hidden');
+                dom.placeholder.classList.add('hidden');
+                dom.imageContainer.classList.add('hidden');
+                dom.errorMessage.classList.add('hidden');
+                dom.actionButtons.classList.add('hidden');
+                dom.generateBtn.disabled = true;
+                dom.generateBtn.textContent = 'Menghasilkan...';
+                dom.generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            },
+            showResult: (imageUrl) => {
+                dom.resultImage.src = imageUrl;
+                dom.downloadBtn.href = imageUrl;
+                dom.imageContainer.classList.remove('hidden');
+                dom.actionButtons.classList.remove('hidden');
+                dom.loader.classList.add('hidden');
+                ui.resetGenerateButton();
+            },
+            showError: (message) => {
+                dom.errorMessage.innerHTML = message;
+                dom.errorMessage.classList.remove('hidden');
+                dom.loader.classList.add('hidden');
+                dom.placeholder.classList.remove('hidden');
+                dom.imageContainer.classList.add('hidden');
+                dom.actionButtons.classList.add('hidden');
+                ui.resetGenerateButton();
+            },
+            resetGenerateButton: () => {
+                dom.generateBtn.disabled = false;
+                dom.generateBtn.textContent = 'Buat Gambar';
+                dom.generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            },
+            handleToggle: (toggle, input) => {
+                input.classList.toggle('hidden', toggle.checked);
+            },
+            updateButtonSelection: (container, selectedBtn, btnClass) => {
+                container.querySelectorAll(`.${btnClass}`).forEach(btn => {
+                    btn.classList.remove('sub-btn-active');
+                    btn.classList.add('sub-btn-inactive');
+                });
+                selectedBtn.classList.add('sub-btn-active');
+                selectedBtn.classList.remove('sub-btn-inactive');
+            }
+        };
+
+        // --- CORE LOGIC FUNCTIONS ---
+        const logic = {
+            cropImage: (base64Data, targetRatioString) => {
+                 return new Promise((resolve, reject) => {
+                    const [w, h] = targetRatioString.split(':').map(Number);
+                    const targetRatio = w / h;
+                    const img = new Image();
+                    img.onload = () => {
+                        const sW = img.width, sH = img.height, sR = sW / sH;
+                        let sx = 0, sy = 0, sw = sW, sh = sH;
+                        if (sR > targetRatio) { sw = sH * targetRatio; sx = (sW - sw) / 2; } 
+                        else if (sR < targetRatio) { sh = sW / targetRatio; sy = (sH - sh) / 2; }
+                        const canvas = Object.assign(document.createElement('canvas'), {width: sw, height: sh});
+                        canvas.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+                        resolve(canvas.toDataURL('image/png'));
+                    };
+                    img.onerror = () => reject(new Error("Gagal memuat gambar untuk dipotong."));
+                    img.src = `data:image/png;base64,${base64Data}`;
+                });
+            },
+            processFile: (file) => {
+                if (!file || !file.type.startsWith('image/')) {
+                    ui.showError("Unggah file gambar (PNG/JPG).");
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    state.uploadedImage.base64 = reader.result.split(',')[1];
+                    state.uploadedImage.mimeType = file.type;
+                    dom.uploadPreviewImage.src = reader.result;
+                    dom.uploadPrompt.classList.add('hidden');
+                    dom.uploadPreviewContainer.classList.remove('hidden');
+                    dom.errorMessage.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            },
+            assemblePrompt: () => {
+                let parts = [];
+                // 1. Pakaian
+                if (dom.pakaianToggle.checked) {
+                    parts.push('mempertahankan pakaian yang sama seperti di gambar referensi');
+                } else if (dom.pakaianDeskripsi.value.trim()) {
+                    parts.push(`mengenakan ${dom.pakaianDeskripsi.value.trim()}`);
+                }
+                // 2. Latar Belakang
+                if (dom.latarToggle.checked) {
+                    parts.push('dengan latar belakang yang sama seperti di gambar referensi');
+                } else if (dom.latarDeskripsi.value.trim()) {
+                    parts.push(`berada di ${dom.latarDeskripsi.value.trim()}`);
+                }
+                // 3. Pose
+                 if (dom.poseToggle.checked) {
+                    parts.push('dengan pose tubuh, tangan, dan kepala yang acak namun natural');
+                } else if (dom.poseDeskripsi.value.trim()) {
+                    parts.push(`dengan pose ${dom.poseDeskripsi.value.trim()}`);
+                }
+                // 4. Angle
+                const angleMap = {
+                    'sangat-dekat': 'dalam angle extreme close-up (hanya wajah)',
+                    'dekat': 'dalam angle medium shot (setengah badan)',
+                    'jauh': 'dalam angle medium long shot (hingga lutut)',
+                    'sangat-jauh': 'dalam angle full body shot (seluruh badan)',
+                    'random': 'dalam angle acak'
+                };
+                parts.push(angleMap[dom.angleSelect.value]);
+                // 5. Perspektif
+                parts.push(`dilihat dari perspektif ${state.selectedPerspektif}`);
+                // 6. Environment
+                parts.push(`di lokasi ${state.selectedLokasi} pada ${state.selectedWaktu} hari`);
+                
+                let assembledPrompt = `Seorang subjek, ${parts.join(', ')}.`;
+
+                // 7. Deskripsi Tambahan
+                const tambahan = dom.promptEl.value.trim();
+                if(tambahan) {
+                    assembledPrompt += ` Detail tambahan: ${tambahan}.`;
+                }
+                
+                return assembledPrompt;
+            },
+            processFinalPrompt: (userPrompt) => {
+                let aspectRatioInstruction = {
+                    '16:9': 'lanskap 16:9.', '4:3': 'lanskap 4:3.',
+                    '9:16': 'potret 9:16.', '3:4': 'potret 3:4.',
+                    '1:1': 'persegi 1:1.'
+                }[state.selectedAspectRatio];
+                
+                return `Menciptakan karya seni yang aman. Gunakan wajah dari gambar yang diunggah HANYA sebagai referensi fitur wajah untuk karakter dalam adegan ini: ${userPrompt} Gambar ini harus dalam format ${aspectRatioInstruction} Kualitas tertinggi, detail yang tajam.`;
+            },
+            generateImage: async () => {
+                if (!state.uploadedImage.base64) { ui.showError("Unggah gambar referensi wajah dulu."); return; }
+                
+                ui.showLoading();
+                const userPrompt = logic.assemblePrompt();
+                const finalPrompt = logic.processFinalPrompt(userPrompt);
+
+                const payload = {
+                    contents: [{ parts: [{ text: finalPrompt }, { inlineData: { mimeType: state.uploadedImage.mimeType, data: state.uploadedImage.base64 } }] }],
+                    generationConfig: { responseModalities: ['IMAGE'] },
+                };
+                
+                try {
+                    const response = await fetch(IMAGE_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`); }
+                    const result = await response.json();
+                    const candidate = result?.candidates?.[0];
+                    if (!candidate) throw new Error("Respons API tidak valid.");
+                    if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+                        if (['SAFETY', 'RECITATION', 'OTHER'].includes(candidate.finishReason)) throw new Error(`Diblokir filter keamanan.<br><b>Saran:</b> Coba foto referensi lain atau sederhanakan deskripsi.`);
+                        throw new Error(`Pembuatan dihentikan: ${candidate.finishReason}.`);
+                    }
+                    const base64Data = candidate.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+                    if (!base64Data) throw new Error("Tidak ada data gambar diterima.");
+                    const croppedImageUrl = await logic.cropImage(base64Data, state.selectedAspectRatio);
+                    ui.showResult(croppedImageUrl);
+                } catch (error) {
+                    console.error("Error:", error);
+                    ui.showError(error.message);
+                }
+            }
+        };
+
+        // --- EVENT LISTENERS ---
+        dom.generateBtn.addEventListener('click', logic.generateImage);
+        dom.pakaianToggle.addEventListener('change', () => ui.handleToggle(dom.pakaianToggle, dom.pakaianDeskripsi));
+        dom.latarToggle.addEventListener('change', () => ui.handleToggle(dom.latarToggle, dom.latarDeskripsi));
+        dom.poseToggle.addEventListener('change', () => ui.handleToggle(dom.poseToggle, dom.poseDeskripsi));
+
+        dom.perspektifSelector.addEventListener('click', e => {
+            const btn = e.target.closest('.perspektif-btn');
+            if (btn) { state.selectedPerspektif = btn.dataset.value; ui.updateButtonSelection(dom.perspektifSelector, btn, 'perspektif-btn'); }
+        });
+        dom.lokasiSelector.addEventListener('click', e => {
+            const btn = e.target.closest('.lokasi-btn');
+            if (btn) { state.selectedLokasi = btn.dataset.value; ui.updateButtonSelection(dom.lokasiSelector, btn, 'lokasi-btn'); }
+        });
+        dom.waktuSelector.addEventListener('click', e => {
+            const btn = e.target.closest('.waktu-btn');
+            if (btn) { state.selectedWaktu = btn.dataset.value; ui.updateButtonSelection(dom.waktuSelector, btn, 'waktu-btn'); }
+        });
+        dom.aspectRatioSelector.addEventListener('click', e => {
+            const btn = e.target.closest('.aspect-ratio-btn');
+            if (btn) { state.selectedAspectRatio = btn.dataset.ratio; ui.updateButtonSelection(dom.aspectRatioSelector, btn, 'aspect-ratio-btn'); }
+        });
+
+        dom.faceUploadInput.addEventListener('change', (e) => logic.processFile(e.target.files[0]));
+        dom.faceUploadLabel.addEventListener('dragover', (e) => { e.preventDefault(); dom.faceUploadLabel.classList.add('drag-over'); });
+        dom.faceUploadLabel.addEventListener('dragleave', (e) => { e.preventDefault(); dom.faceUploadLabel.classList.remove('drag-over'); });
+        dom.faceUploadLabel.addEventListener('drop', (e) => {
+            e.preventDefault(); dom.faceUploadLabel.classList.remove('drag-over');
+            const file = e.dataTransfer.files?.[0];
+            if (file) { dom.faceUploadInput.files = e.dataTransfer.files; logic.processFile(file); }
+        });
+        
+        // --- INITIALIZATION ---
+        // Add shared styles for sub-buttons
+        const style = document.createElement('style');
+        style.textContent = `
+            .sub-btn-inactive { background-color: #374151; color: #D1D5DB; padding: 0.5rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; transition: background-color 0.2s; }
+            .sub-btn-inactive:hover { background-color: #4B5563; }
+            .sub-btn-active { background-color: #4F46E5; color: white; padding: 0.5rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; ring: 2px; ring-color: #818CF8; }
+        `;
+        document.head.append(style);
+        
+    </script>
+</body>
+</html>
