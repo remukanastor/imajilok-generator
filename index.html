@@ -27,6 +27,16 @@
             <p class="text-gray-400 mt-2">By. IMAJINASI LOKAL</p>
         </div>
 
+        <!-- API Key Input -->
+        <div class="space-y-2 p-4 bg-gray-700/50 rounded-lg border border-yellow-500/30">
+            <label for="api-key-input" class="text-sm font-medium text-yellow-300">Masukkan Kunci API Gemini Anda</label>
+            <div class="flex gap-2">
+                <input type="password" id="api-key-input" class="flex-grow p-2 bg-gray-900 border border-gray-600 rounded-lg text-sm" placeholder="Kunci API Anda">
+                <button id="save-api-key-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 rounded-lg text-sm transition">Simpan</button>
+            </div>
+            <p class="text-xs text-gray-400">Anda memerlukan API Key untuk menggunakan aplikasi ini. Dapatkan secara gratis di <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-indigo-400 hover:underline">Google AI Studio</a>.</p>
+        </div>
+
         <!-- Unggah Wajah -->
         <div class="space-y-2">
             <label class="text-sm font-medium text-gray-300">1. Unggah Referensi Wajah (Wajib)</label>
@@ -154,9 +164,12 @@
 
     <script type="module">
         // --- CONFIG & DOM ELEMENTS ---
-        const IMAGE_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=`;
+        const IMAGE_API_BASE_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent`;
+        let apiKey = '';
         
         const dom = {
+            apiKeyInput: document.getElementById('api-key-input'),
+            saveApiKeyBtn: document.getElementById('save-api-key-btn'),
             generateBtn: document.getElementById('generate-btn'),
             promptEl: document.getElementById('prompt'),
             faceUploadInput: document.getElementById('face-upload-input'),
@@ -227,9 +240,16 @@
                 ui.resetGenerateButton();
             },
             resetGenerateButton: () => {
-                dom.generateBtn.disabled = false;
-                dom.generateBtn.textContent = 'Buat Gambar';
-                dom.generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                // Only enable if API key is present
+                if (apiKey) {
+                    dom.generateBtn.disabled = false;
+                    dom.generateBtn.textContent = 'Buat Gambar';
+                    dom.generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    dom.generateBtn.disabled = true;
+                    dom.generateBtn.textContent = 'Masukkan Kunci API Dulu';
+                    dom.generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
             },
             handleToggle: (toggle, input) => {
                 input.classList.toggle('hidden', toggle.checked);
@@ -334,6 +354,10 @@
                 return `Menciptakan karya seni yang aman. Gunakan wajah dari gambar yang diunggah HANYA sebagai referensi fitur wajah untuk karakter dalam adegan ini: ${userPrompt} Gambar ini harus dalam format ${aspectRatioInstruction} Kualitas tertinggi, detail yang tajam.`;
             },
             generateImage: async () => {
+                if (!apiKey) {
+                    ui.showError("Silakan masukkan Kunci API Gemini Anda yang valid terlebih dahulu.");
+                    return;
+                }
                 if (!state.uploadedImage.base64) { ui.showError("Unggah gambar referensi wajah dulu."); return; }
                 
                 ui.showLoading();
@@ -346,7 +370,8 @@
                 };
                 
                 try {
-                    const response = await fetch(IMAGE_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const apiUrlWithKey = `${IMAGE_API_BASE_URL}?key=${apiKey}`;
+                    const response = await fetch(apiUrlWithKey, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`); }
                     const result = await response.json();
                     const candidate = result?.candidates?.[0];
@@ -366,7 +391,39 @@
             }
         };
 
+        function saveApiKey() {
+            const key = dom.apiKeyInput.value.trim();
+            if (key) {
+                localStorage.setItem('geminiApiKey_imajinasiLokal', key);
+                apiKey = key;
+                ui.resetGenerateButton();
+                dom.saveApiKeyBtn.textContent = 'Tersimpan!';
+                setTimeout(() => { dom.saveApiKeyBtn.textContent = 'Simpan'; }, 2000);
+            } else {
+                ui.showError("Kunci API tidak boleh kosong.");
+            }
+        }
+        
+        function initializeApp() {
+            const savedKey = localStorage.getItem('geminiApiKey_imajinasiLokal');
+            if (savedKey) {
+                apiKey = savedKey;
+                dom.apiKeyInput.value = savedKey;
+            }
+            ui.resetGenerateButton();
+
+            // Add shared styles for sub-buttons
+            const style = document.createElement('style');
+            style.textContent = `
+                .sub-btn-inactive { background-color: #374151; color: #D1D5DB; padding: 0.5rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; transition: background-color 0.2s; }
+                .sub-btn-inactive:hover { background-color: #4B5563; }
+                .sub-btn-active { background-color: #4F46E5; color: white; padding: 0.5rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; ring: 2px; ring-color: #818CF8; }
+            `;
+            document.head.append(style);
+        }
+
         // --- EVENT LISTENERS ---
+        dom.saveApiKeyBtn.addEventListener('click', saveApiKey);
         dom.generateBtn.addEventListener('click', logic.generateImage);
         dom.pakaianToggle.addEventListener('change', () => ui.handleToggle(dom.pakaianToggle, dom.pakaianDeskripsi));
         dom.latarToggle.addEventListener('change', () => ui.handleToggle(dom.latarToggle, dom.latarDeskripsi));
@@ -399,15 +456,9 @@
         });
         
         // --- INITIALIZATION ---
-        // Add shared styles for sub-buttons
-        const style = document.createElement('style');
-        style.textContent = `
-            .sub-btn-inactive { background-color: #374151; color: #D1D5DB; padding: 0.5rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; transition: background-color 0.2s; }
-            .sub-btn-inactive:hover { background-color: #4B5563; }
-            .sub-btn-active { background-color: #4F46E5; color: white; padding: 0.5rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; ring: 2px; ring-color: #818CF8; }
-        `;
-        document.head.append(style);
+        initializeApp();
         
     </script>
 </body>
 </html>
+
